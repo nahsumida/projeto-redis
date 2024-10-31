@@ -1,12 +1,12 @@
-import mysql, { ConnectionOptions } from 'mysql2';
+import mysql, { connectionOptions } from 'mysql2';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const access: ConnectionOptions = {
+const access: connectionOptions = {
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE
 };
 
-export const conn = mysql.createConnection(access);
+export const conn = mysql.createconnection(access);

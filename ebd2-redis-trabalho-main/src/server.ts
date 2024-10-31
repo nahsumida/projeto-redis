@@ -21,6 +21,41 @@ routes.get('/getAllProducts', async(req: Request, res: Response)=>{
     res.send(products);
 });
 
+
+routes.post('/getProductByID', async(req: Request, res: Response)=>{
+    // obter todos os produtos.
+    const products = await productsRepo.getAll();
+    res.statusCode = 200; 
+    res.type('application/json')
+    res.send(products);
+});
+
+
+routes.put('/insertProduct', async(req: Request, res: Response)=>{
+    // obter todos os produtos.
+    const products = await productsRepo.getAll();
+    res.statusCode = 200; 
+    res.type('application/json')
+    res.send(products);
+});
+
+routes.post('/updateProduct', async(req: Request, res: Response)=>{
+    // obter todos os produtos.
+    const products = await productsRepo.getAll();
+    res.statusCode = 200; 
+    res.type('application/json')
+    res.send(products);
+});
+
+
+routes.delete('/deleteProduct', async(req: Request, res: Response)=>{
+    // obter todos os produtos.
+    const products = await productsRepo.getAll();
+    res.statusCode = 200; 
+    res.type('application/json')
+    res.send(products);
+});
+
 // aplicar as rotas na aplicação web backend. 
 app.use(routes);
 
