@@ -1,6 +1,6 @@
 import { ResultSetHeader } from "mysql2"
-import { conn } from "./db"
-import { Product } from "./product"
+import { conn } from "../db"
+import { Product } from "../models/product"
 
 export class ProductsRepository {
 

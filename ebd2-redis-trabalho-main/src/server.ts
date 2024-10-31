@@ -1,6 +1,6 @@
 import express from "express";
 import { Request, Response, Router } from "express";
-import {ProductsRepository} from "./ProductsRepository";
+import {ProductsRepository} from "./repositories/ProductsRepository";
 
 const app = express();
 const port = 3000;

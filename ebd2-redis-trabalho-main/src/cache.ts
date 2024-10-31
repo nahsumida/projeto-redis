@@ -5,9 +5,9 @@ export const redis = new Redis();
 
 // Função para definir um valor em uma chave
 async function setValue(key: string, value: string): Promise<void> {
-  await redis.set(key, value);
-  console.log(`Chave ${key} definida com valor ${value}`);
-}
+    await redis.set(key, value);
+    console.log(`Chave ${key} definida com valor ${value}`);
+  }
 
 // Função para obter um valor de uma chave
 async function getValue(key: string): Promise<string | null> {
@@ -17,11 +17,10 @@ async function getValue(key: string): Promise<string | null> {
 }
 
 // Função para obter um valor de uma chave
-async function deleteValue(key: string): Promise<string | null> {
-    const value = await redis.delete(key);
+async function deleteValue(key: string): Promise<void> {
+    await redis.del(key);
     console.log(`Chave ${key} excluida`);
-    return value;
-  }
+}
 
 // Exemplo de uso
 (async () => {
