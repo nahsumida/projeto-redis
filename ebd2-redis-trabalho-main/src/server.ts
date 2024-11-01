@@ -113,7 +113,7 @@ routes.post('/updateProduct', async (req: Request, res: Response) => {
         res.status(400).json({ error: "Digite um ID válido" });
         return;
     } else if (prod.DESCRIPTION == "" || prod.NAME == "" || prod.PRICE == null ) {
-        res.status(400).json({ error: "Preencha com valores válidos para description, name e price" });
+        res.status(400).json({ error: "Preencha com valores válidos para os campos description, name e/ou price" });
         return;
     }
     try {
@@ -124,7 +124,7 @@ routes.post('/updateProduct', async (req: Request, res: Response) => {
             await setValue(product);
             res.status(200).json(product);
         } else {
-            res.status(500).json({ error: "Erro ao atualizar produto" });
+            res.status(500).json({ error: "Erro ao atualizar produto - Produto não encontrado" });
         }
     } catch (error) {
         const err = error as Error;
