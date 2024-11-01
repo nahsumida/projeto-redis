@@ -28,15 +28,19 @@ routes.get('/', (req: Request, res: Response)=>{
 routes.get('/getAllProducts', async(req: Request, res: Response)=>{
     // obter todos os produtos.
 
-    const rows = await productsRepo.getAll();
-    console.log(rows)
-    for (const row of rows) {
-        console.log(row)
-        await setValue(row.name, row)
+    const products = await productsRepo.getAll();
+    console.log(products)
+    for (const product of products) {
+        if (product.ID !== undefined) {
+            const productIdAsString = product.ID.toString();
+            await setValue(productIdAsString, product); // Passa o ID convertido para string de forma explícita
+        } else {
+            console.error("Produto sem ID encontrado:", product);
+        }
     }
     res.statusCode = 200; 
     res.type('application/json')
-    res.send(rows);
+    res.send(products);
 });
 
 

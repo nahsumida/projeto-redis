@@ -7,7 +7,9 @@ export const redis = new Redis();
 
 // Função para definir um valor em uma chave
 export async function setValue(key: string, value: Product): Promise<void> {
-    await redis.hset("key", value);
+  const valueAsString = JSON.stringify(value);
+
+    await redis.set(key, valueAsString);
     console.log(`Chave ${key} definida com valor ${value}`);
   }
 
