@@ -5,11 +5,11 @@ import { Product } from "./models/product";
 export const redis = new Redis();
 
 // Função para definir um valor em uma chave
-export async function setValue(key: string, value: Product): Promise<void> {
+export async function setValue(value: Product): Promise<void> {
   const valueAsString = JSON.stringify(value);
 
-    await redis.set(key, valueAsString);
-    console.log(`Chave ${key} definida com valor ${value}`);
+    await redis.set(value.ID!.toString(), valueAsString);
+    console.log(`Chave ${value.ID!.toString()} definida com valor ${value}`);
   }
 
 // Função para obter um valor de uma chave

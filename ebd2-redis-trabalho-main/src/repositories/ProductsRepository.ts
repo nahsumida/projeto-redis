@@ -50,7 +50,7 @@ export class ProductsRepository {
         (err, res) => {
           if (err) reject(err)
           else
-            this.getById(p.id!)
+            this.getById(p.ID!)
               .then(resolve)
               .catch(reject)
         }
