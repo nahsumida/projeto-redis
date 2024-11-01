@@ -1,7 +1,6 @@
 import Redis from 'ioredis';
 import { Product } from "./models/product";
 
-
  // Cria uma instância do cliente Redis que se conecta ao servidor Redis local (por padrão, localhost:6379)
 export const redis = new Redis();
 
@@ -20,18 +19,22 @@ export async function getValue(key: string): Promise<string | null> {
   return value;
 }
 
-// Função para obter um valor de uma chave
+// Função para excluir um valor de uma chave
 export async function deleteValue(key: string): Promise<void> {
     await redis.del(key);
     console.log(`Chave ${key} excluida`);
 }
-/*
-// Exemplo de uso
-(async () => {
-  await setValue('minhaChave', 'meuValor');
-  await getValue('minhaChave');
-  await deleteValue('minhaChave')
 
-  // Fecha a conexão com o Redis
-  redis.disconnect();
-})();*/
+
+// Função para obter um valor de uma chave
+export async function getAllCache(): Promise<Product[] | null> {
+  let products : Product[] = []
+  const keys = await redis.keys('*');
+  for (const key of keys){
+    const value = await redis.get(key);
+    const valueParsed : Product = JSON.parse(value!);
+
+    products.push(valueParsed)
+  }
+  return products;
+}

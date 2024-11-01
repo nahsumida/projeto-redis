@@ -16,7 +16,7 @@ export class DataBaseChangesRepository {
   delete(id: number): Promise<number> {
     return new Promise((resolve, reject) => {
       conn.query<ResultSetHeader>(
-        "DELETE FROM databaseChanges WHERE id = ?",
+        "DELETE FROM databaseChanges WHERE key_to_delete = ?",
         [id],
         (err, res) => {
           if (err) reject(err)
