@@ -6,10 +6,23 @@ export class DataBaseChangesRepository {
 
   getAll(): Promise<DatabaseChanges[]> {
     return new Promise((resolve, reject) => {
-      conn.query<DatabaseChanges[]>("SELECT * FROM DATABASE_CHANGES", (err, res) => {
+      conn.query<DatabaseChanges[]>("SELECT * FROM databaseChanges", (err, res) => {
         if (err) reject(err)
         else resolve(res)
       })
+    })
+  }
+
+  delete(id: number): Promise<number> {
+    return new Promise((resolve, reject) => {
+      conn.query<ResultSetHeader>(
+        "DELETE FROM databaseChanges WHERE id = ?",
+        [id],
+        (err, res) => {
+          if (err) reject(err)
+          else resolve(res.affectedRows)
+        }
+      )
     })
   }
 }

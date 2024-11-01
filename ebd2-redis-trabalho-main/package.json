@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "nodemon src/server.ts"
+    "build": "npx tsc",
+    "dev": "nodemon src/server.ts",
+  "start": "ts-node src/server.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "### Regras - Equipes de três ou quatro integrantes (deverão formar as equipes no canvas) - Ler atentamente a definição do trabalho. - Data exata para entrega do projeto: 01/11 das 08:00 as 23:59h (pelo Canvas).",
   "dependencies": {
+    "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "ioredis": "^5.4.1",
@@ -19,7 +21,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/mysql": "^2.15.26",
-    "@types/node": "^22.8.0",
+    "@types/node": "^22.8.6",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
