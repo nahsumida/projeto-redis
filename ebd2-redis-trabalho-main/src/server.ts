@@ -153,28 +153,28 @@ function calculateHash(product: Product): string {
     hash.update(JSON.stringify(product));
     return hash.digest('hex');
 }
-  
+
 function compareArrays(array1: Product[], array2: Product[]): Product[] {
     const result: Product[] = [];
-
+  
     // Calcular o hash dos itens do array1
     const array1WithHash = array1.map(item => ({
-        ...item,
-        HASH: calculateHash(item)
+      ...item,
+      HASH: calculateHash(item)
     }));
-
+  
     // Verificar os critérios
     array1WithHash.forEach(item1 => {
-        const item2 = array2.find(item => item.ID === item1.ID);
-
-        if (!item2 || item1.HASH !== item2.HASH) {
+      const item2 = array2.find(item => item.ID === item1.ID);
+  
+      // Incluir no resultado se o item não existir no array2 ou se os hashes forem diferentes
+      if (!item2 || item1.HASH !== item2.HASH) {
         result.push(item1);
-        }
+      }
     });
-
+  
     return result;
-}
-
+  }
 
 /*
 O worker havia sido criado para resolver o problema de alterações feitas diretamente no banco sem passar pelo 
