@@ -30,7 +30,7 @@ export class ProductsRepository {
     return new Promise((resolve, reject) => {
       conn.query<ResultSetHeader>(
         "INSERT INTO PRODUCTS (name, price, description) VALUES(?,?,?)",
-        [p.name, p.price, p.description],
+        [p.NAME, p.PRICE, p.DESCRIPTION],
         (err, res) => {
           if (err) reject(err)
           else
@@ -46,7 +46,7 @@ export class ProductsRepository {
     return new Promise((resolve, reject) => {
       conn.query<ResultSetHeader>(
         "UPDATE PRODUCTS SET name = ?, price = ?, description = ? WHERE id = ?",
-        [p.name, p.price, p.description, p.id],
+        [p.NAME, p.PRICE, p.DESCRIPTION, p.ID],
         (err, res) => {
           if (err) reject(err)
           else

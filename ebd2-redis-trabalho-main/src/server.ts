@@ -86,30 +86,47 @@ routes.post('/getProductByID', async(req: Request, res: Response)=>{
 
 routes.put('/insertProduct', async(req: Request, res: Response)=>{
     const prod : Product = req.body
+    
+    if(prod.DESCRIPTION == null || prod.NAME == null || prod.PRICE == null){
+        res.statusCode = 400; 
+        res.type('application/json')
+        res.send("Preencha com valores de description name e price validos");   
+    }
 
-    const dbProduct = await productsRepo.create(prod);
+    const product = await productsRepo.create(prod);
 
-    // salva o hash apenas no cache
-    prod.HASH = calculateHash(prod)
-    await setValue(prod.ID!.toString(), prod)
-
+    if (product != null && product != undefined){
+        // salva o hash apenas no cache
+        product!.HASH = calculateHash(prod)
+        await setValue(product!.ID!.toString(), product!)
+    }
     res.statusCode = 200; 
     res.type('application/json')
-    res.send(dbProduct);
+    res.send(product);
 });
 
 routes.post('/updateProduct', async(req: Request, res: Response)=>{
     const prod : Product = req.body
 
-    const products = await productsRepo.update(prod);
+    if (prod.ID == null){
+        res.statusCode = 400; 
+        res.type('application/json')
+        res.send("Digite um id valido")
+    } else if(prod.DESCRIPTION == null || prod.NAME == null || prod.PRICE == null){
+        res.statusCode = 400; 
+        res.type('application/json')
+        res.send("Preencha com valores de description name e price validos");
+    }
 
-    // salva o hash apenas no cache
-    prod.HASH = calculateHash(prod)
-    await setValue(prod.ID!.toString(), prod)
+    const product = await productsRepo.update(prod);
+
+        // salva o hash apenas no cache
+        prod!.HASH = calculateHash(prod)
+        await setValue(prod!.ID!.toString(), prod!)
 
     res.statusCode = 200; 
     res.type('application/json')
-    res.send(products);
+    res.send(product);
 });
 
 routes.delete('/deleteProduct', async(req: Request, res: Response)=>{
