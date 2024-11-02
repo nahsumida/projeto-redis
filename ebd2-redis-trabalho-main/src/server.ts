@@ -28,24 +28,28 @@ routes.get('/getAllProducts', async (req: Request, res: Response) => {
     }
 });
 
-// Sincronizar produtos na base.
+// Sincronizar produtos na base
 routes.get('/syncProducts', async (req: Request, res: Response) => {
     try {
-        const dbProducts = await productsRepo.getAll();
-        const cacheProducts = await getAllCache();
-        if (cacheProducts != null) {
-            const results = compareArrays(dbProducts, cacheProducts!);
-            if (results.length > 0) {
-                for (const result of results) {
-                    setValue(result);
-                }
-                res.status(200).json("Cache sincronizado com sucesso");
-            } else {
-                res.status(200).json("Não foi necessário atualizar o cache");
-            }
+      // Obtém todos os produtos do banco de dados
+      const dbProducts = await productsRepo.getAll();
+      // Obtém todos os produtos do cache
+      const cacheProducts = await getAllCache();
+      if (cacheProducts != null) {
+        // Compara os produtos do banco e do cache
+        const results = compareArrays(dbProducts, cacheProducts!);
+        if (results.length > 0) {
+          for (const result of results) {
+            // Atualiza o cache com os produtos diferentes
+            setValue(result);
+          }
+          res.status(200).json("Cache sincronizado com sucesso");
         } else {
-            res.status(500).json({ error: "Cache não encontrado" });
+          res.status(200).json("Não foi necessário atualizar o cache");
         }
+      } else {
+        res.status(500).json({ error: "Cache não encontrado" });
+      }
     } catch (error) {
         const err = error as Error;
         res.status(500).json({ error: "Erro ao sincronizar produtos", details: err.message });
@@ -54,99 +58,131 @@ routes.get('/syncProducts', async (req: Request, res: Response) => {
 
 // Obter produto pelo ID
 routes.post('/getProductByID', async (req: Request, res: Response) => {
-    const id = req.body.ID as string;
-    if (id) {
-        try {
-            let product = null;
-            const cachedProduct = await getValue(id);
-            if (cachedProduct != null) {
-                const prodParsed: Product = JSON.parse(cachedProduct);
-                product = prodParsed;
-            } else {
-                // Fallback
-                const dbProduct = await productsRepo.getById(Number(id));
-                if (dbProduct != undefined) {
-                    product = dbProduct;
-                    await setValue(dbProduct);
-                }
-            }
-            res.status(200).json(product);
-        } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: "Erro ao obter produto pelo ID", details: err.message });
+  // Obtém o ID 
+  const id = req.body.ID as string;
+  if (id) {
+    try {
+      let product = null;
+      // Tenta obter o produto do cache
+      const cachedProduct = await getValue(id);
+      if (cachedProduct != null) {
+        const prodParsed: Product = JSON.parse(cachedProduct);
+        product = prodParsed;
+      } else {
+        // Fallback: se não estiver no cache, obtém do banco de dados
+        const dbProduct = await productsRepo.getById(Number(id));
+        if (dbProduct != undefined) {
+          product = dbProduct;
+          // Atualiza o cache
+          await setValue(dbProduct);
         }
-    } else {
-        res.status(400).json({ error: "ID não fornecido ou inválido" });
+      }
+      res.status(200).json(product);
+    } catch (error) {
+      const err = error as Error;
+      res
+        .status(500)
+        .json({ error: "Erro ao obter produto pelo ID", details: err.message });
     }
+  } else {
+    res.status(400).json({ error: "ID não fornecido ou inválido" });
+  }
 });
 
 // Inserir produto
 routes.put('/insertProduct', async (req: Request, res: Response) => {
-    const prod: Product = req.body;
-    console.log(prod)
-    if (prod.DESCRIPTION == "" || prod.NAME == "") {
-        res.status(400).json({ error: "Preencha com valores válidos para description, name e price" });
-        return;
+  // Obtém o produto
+  const prod: Product = req.body;
+  console.log(prod);
+  if (prod.DESCRIPTION == "" || prod.NAME == "") {
+    res
+      .status(400)
+      .json({
+        error: "Preencha com valores válidos para description, name e price",
+      });
+    return;
+  }
+  try {
+    const product = await productsRepo.create(prod);
+    if (product) {
+      // Salva o hash apenas no cache
+      // Calcula o hash do produto
+      product.HASH = calculateHash(product);
+      // Atualiza o cache
+      await setValue(product);
+      res.status(200).json(product);
+    } else {
+      res.status(500).json({ error: "Erro ao inserir produto" });
     }
-    try {
-        const product = await productsRepo.create(prod);
-        if (product) {
-            // Salva o hash apenas no cache
-            product.HASH = calculateHash(product);
-            await setValue(product);
-            res.status(200).json(product);
-        } else {
-            res.status(500).json({ error: "Erro ao inserir produto" });
-        }
-    } catch (error) {
-        const err = error as Error;
-        res.status(500).json({ error: "Erro ao inserir produto aqui", details: err.message });
-    }
+  } catch (error) {
+    const err = error as Error;
+    res
+      .status(500)
+      .json({ error: "Erro ao inserir produto aqui", details: err.message });
+  }
 });
 
 // Atualizar produto
 routes.post('/updateProduct', async (req: Request, res: Response) => {
-    const prod: Product = req.body;
-    console.log(prod)
+  // Obtém o produto
+  const prod: Product = req.body;
+  console.log(prod);
 
-    if (prod.ID == null) {
-        res.status(400).json({ error: "Digite um ID válido" });
-        return;
-    } else if (prod.DESCRIPTION == "" || prod.NAME == "" || prod.PRICE == null ) {
-        res.status(400).json({ error: "Preencha com valores válidos para os campos description, name e/ou price" });
-        return;
+  if (prod.ID == null) {
+    res.status(400).json({ error: "Digite um ID válido" });
+    return;
+  } else if (prod.DESCRIPTION == "" || prod.NAME == "" || prod.PRICE == null) {
+    res
+      .status(400)
+      .json({
+        error:
+          "Preencha com valores válidos para os campos description, name e/ou price",
+      });
+    return;
+  }
+  try {
+    // Tenta atualizar o produto no banco de dados
+    const product = await productsRepo.update(prod);
+    if (product) {
+      // Salva o hash apenas no cache
+      // Calcula o hash do produto
+      product.HASH = calculateHash(product);
+      // Atualiza o cache
+      await setValue(product);
+      res.status(200).json(product);
+    } else {
+      res
+        .status(500)
+        .json({ error: "Erro ao atualizar produto - Produto não encontrado" });
     }
-    try {
-        const product = await productsRepo.update(prod);
-        if (product) {
-            // Salva o hash apenas no cache
-            product.HASH = calculateHash(product);
-            await setValue(product);
-            res.status(200).json(product);
-        } else {
-            res.status(500).json({ error: "Erro ao atualizar produto - Produto não encontrado" });
-        }
-    } catch (error) {
-        const err = error as Error;
-        res.status(500).json({ error: "Erro ao atualizar produto", details: err.message });
-    }
+  } catch (error) {
+    const err = error as Error;
+    res
+      .status(500)
+      .json({ error: "Erro ao atualizar produto", details: err.message });
+  }
 });
 
 // Deletar produto
 routes.delete('/deleteProduct', async (req: Request, res: Response) => {
-    const id = req.body.ID as string;
-    if (id) {
-        try {
-            await deleteValue(id);
-            await productsRepo.delete(Number(id));
-            res.status(200).json(`Produto ${id} deletado com sucesso`);
-        } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: "Erro ao deletar produto", details: err.message });
-        }
-    } else {
-        res.status(400).json({ error: "ID não fornecido ou inválido" });
+  // Obtém o ID
+  const id = req.body.ID as string;
+  if (id) {
+    try {
+      // Remove o produto do cache
+      await deleteValue(id);
+      // Deleta o produto do banco de dados
+      await productsRepo.delete(Number(id));
+      res.status(200).json(`Produto ${id} deletado com sucesso`);
+    } catch (error) {
+      const err = error as Error;
+      res
+        .status(500)
+        .json({ error: "Erro ao deletar produto", details: err.message });
     }
+  } else {
+    res.status(400).json({ error: "ID não fornecido ou inválido" });
+  }
 });
 
 app.use(express.json());
@@ -160,6 +196,7 @@ app.listen(port, async () => {
     await callSyncProducts();
 });
 
+// Função para chamar a rota /syncProducts
 const callSyncProducts = async () => {
     try {
         await axios.get("http://localhost:3000/syncProducts");
@@ -168,32 +205,37 @@ const callSyncProducts = async () => {
     }
 };
 
+// Função para calcular o hash de um produto
 function calculateHash(product: Product): string {
     const hash = crypto.createHash('sha256');
     hash.update(JSON.stringify(product));
     return hash.digest('hex');
 }
 
+// Função para comparar dois arrays de produtos e encontrar diferenças
 function compareArrays(array1: Product[], array2: Product[]): Product[] {
-    const result: Product[] = [];
+  const result: Product[] = [];
 
-    // Calcular o hash dos itens do array1
-    const array1WithHash = array1.map(item => ({
-        ...item,
-        HASH: calculateHash(item)
-    }));
+  // Calcular o hash dos itens do array1
+  const array1WithHash = array1.map((item) => ({
+    ...item,
+    // Adiciona o hash ao produto
+    HASH: calculateHash(item),
+  }));
 
-    // Verificar os critérios
-    array1WithHash.forEach(item1 => {
-        const item2 = array2.find(item => item.ID === item1.ID);
+  // Verificar os critérios
+  array1WithHash.forEach((item1) => {
+    const item2 = array2.find((item) => item.ID === item1.ID);
 
-        // Incluir no resultado se o item não existir no array2 ou se os hashes forem diferentes
-        if (!item2 || item1.HASH !== item2.HASH) {
-            result.push(item1);
-        }
-    });
+    // Incluir no resultado se o item não existir no array2 ou se os hashes forem diferentes
+    if (!item2 || item1.HASH !== item2.HASH) {
+      // Adiciona ao resultado se não encontrado ou se diferente
+      result.push(item1);
+    }
+  });
 
-    return result;
+  // Retorna os produtos diferentes
+  return result;
 }
 
 /*
